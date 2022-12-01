@@ -16,17 +16,28 @@ app.post('/set', async (request, response) => {
 
 
 app.get('/get', async (request, response) => {
-    const theContent = await fsp.readFile('data.json', 'utf-8')
-    console.log(theContent);
-    response.status(200);
-    response.json(theContent);
+    try {
+        const theContent = await fsp.readFile('data.json', 'utf-8')
+        console.log(theContent);
+        response.status(200);
+        response.json(theContent);
+    } catch (error) {
+        console.log(error.message);
+        response.send(false)
+    }
 });
 
 
 app.delete('/remove', async (request, response) => {
-    await fsp.unlink('data.json')
-    response.status(200);
-    response.json(true);
+    try {
+        await fsp.unlink('data.json')
+        response.status(200);
+        response.json(true);
+    } catch (error) {
+        console.log(error.message);
+        response.send(false)
+    }
+
 });
 
 app.all('/*', async (request, response) => {
