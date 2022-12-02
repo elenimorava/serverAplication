@@ -3,8 +3,6 @@ const app = express();
 app.use(express.json());
 import database from "./functions.js";
 
-
-
 app.get('/trips', async (request, response) => {
     const result = await database.raw('select * from trips')
     response.status(200)
@@ -15,9 +13,9 @@ app.get('/trips', async (request, response) => {
 app.post('/trips', async (request, response) => {  //not yet finished
     const trip = request.body
     const insertResult = await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
-    const result = await database.raw('select * from trips')
+    const newTrip = await database.raw(`SELECT * FROM trips ORDER BY id DESC LIMIT 1;`)
     response.status(200)
-    response.json(result)
+    response.json(newTrip)
 });
 
 
