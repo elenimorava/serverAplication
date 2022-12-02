@@ -1,76 +1,45 @@
-import fsp from 'fs/promises'
 import express from 'express';
 const app = express();
 app.use(express.json());
+import database from "./functions.js";
 
-app.post('/trip', async (request, response) => {
+
+
+app.get('/trips', async (request, response) => {
+    const result = await database.raw('select * from trips')
+    response.status(200)
+    response.json(result)
+});
+
+
+app.post('/trips', async (request, response) => {  //not yet finished
     const trip = request.body
-    const database = await fsp.readFile("database.json", "utf-8")
-    const databaseParsed = JSON.parse(database)
-    const id = databaseParsed.length + 1
-    trip.id = id
-    databaseParsed.push(trip)
-    await fsp.writeFile("database.json", JSON.stringify(databaseParsed, null, 4))
+    const insertResult = await database.raw(`insert into trips (date, destination) values ('${trip.date}','${trip.destination}')`)
+    const result = await database.raw('select * from trips')
     response.status(200)
-    response.json(trip)
+    response.json(result)
 });
 
-app.get('/trip/:id', async (request, response) => {
+
+app.get('/trips/:id', async (request, response) => {
     const id = Number(request.params.id)
-    const database = await fsp.readFile("database.json", "utf-8")
-    const databaseParsed = JSON.parse(database)
-    const trip = databaseParsed.find((trip) => {
-        return trip.id === id
-    })
-    if (trip) {
-        response.status(200)
-        response.json(trip)
-    } else {
-        response.status(404)
-        response.json(`Trip with the selected id: ${id} , does not exist`)
-    }
-
-});
-
-app.get('/trip', async (request, response) => {
-    const database = await fsp.readFile("database.json", "utf-8")
-    const databaseParsed = JSON.parse(database)
+    const result = await database.raw(`select * from trips where id = ${id}`)
     response.status(200)
-    response.json(databaseParsed)
+    response.json(result)
 });
 
-app.put('/trip/:id/:destination', async (request, response) => {
+app.put('/trips/:id/:destination', async (request, response) => {
     const id = Number(request.params.id)
     const newDestination = request.params.destination
-    const database = await fsp.readFile("database.json", "utf-8")
-    const databaseParsed = JSON.parse(database)
-    const trip = databaseParsed.find((trip) => {
-        return trip.id === id
-    })
-    trip.destination = newDestination
-    console.log(trip);
-    const index = databaseParsed.indexOf(trip);
-    if (index > -1) {
-        databaseParsed.splice(index, 1);
-    }
-    databaseParsed.push(trip)
-    await fsp.writeFile("database.json", JSON.stringify(databaseParsed, null, 4))
+    const update = await database.raw(`update trips set destination = '${newDestination}' where id = ${id};`)
+    const result = await database.raw('select * from trips')
     response.status(200)
-    response.json(trip)
+    response.json(result)
 });
 
-app.delete('/trip/:id', async (request, response) => {
+app.delete('/trips/:id', async (request, response) => {
     const id = Number(request.params.id)
-    const database = await fsp.readFile("database.json", "utf-8")
-    const databaseParsed = JSON.parse(database)
-    const trip = databaseParsed.find((trip) => {
-        return trip.id === id
-    })
-    const index = databaseParsed.indexOf(trip);
-    if (index > -1) {
-        databaseParsed.splice(index, 1);
-    }
-    await fsp.writeFile("database.json", JSON.stringify(databaseParsed, null, 4))
+    const result = await database.raw(`delete from trips where id=${id}`)
     response.status(200)
     response.json(true)
 });

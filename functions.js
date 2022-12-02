@@ -1,11 +1,11 @@
-import fsp from 'fs/promises';
+import knex from 'knex';
 
-async function createFile(filename, text) {
-    try {
-        await fsp.writeFile(`${filename}`, `${text}\n`)
-    } catch (error) {
-        console.log(error.message);
-    }
-}
+const database = knex({
+    client: 'sqlite3',
+    connection: {
+        filename: './database.sqlite3',
+    },
+    useNullAsDefault: true,
+});
 
-export default createFile;
+export default database;
